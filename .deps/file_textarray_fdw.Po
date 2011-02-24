@@ -1,0 +1,235 @@
+file_textarray_fdw.o: file_textarray_fdw.c \
+ /home/andrew/pgl/inst.fdw.5710/include/postgresql/server/postgres.h \
+ /home/andrew/pgl/inst.fdw.5710/include/postgresql/server/c.h \
+ /home/andrew/pgl/inst.fdw.5710/include/postgresql/server/pg_config.h \
+ /home/andrew/pgl/inst.fdw.5710/include/postgresql/server/pg_config_manual.h \
+ /home/andrew/pgl/inst.fdw.5710/include/postgresql/server/pg_config_os.h \
+ /home/andrew/pgl/inst.fdw.5710/include/postgresql/server/postgres_ext.h \
+ /home/andrew/pgl/inst.fdw.5710/include/postgresql/server/port.h \
+ /home/andrew/pgl/inst.fdw.5710/include/postgresql/server/utils/elog.h \
+ /home/andrew/pgl/inst.fdw.5710/include/postgresql/server/utils/errcodes.h \
+ /home/andrew/pgl/inst.fdw.5710/include/postgresql/server/utils/palloc.h \
+ /home/andrew/pgl/inst.fdw.5710/include/postgresql/server/access/reloptions.h \
+ /home/andrew/pgl/inst.fdw.5710/include/postgresql/server/access/htup.h \
+ /home/andrew/pgl/inst.fdw.5710/include/postgresql/server/access/tupdesc.h \
+ /home/andrew/pgl/inst.fdw.5710/include/postgresql/server/access/attnum.h \
+ /home/andrew/pgl/inst.fdw.5710/include/postgresql/server/catalog/pg_attribute.h \
+ /home/andrew/pgl/inst.fdw.5710/include/postgresql/server/catalog/genbki.h \
+ /home/andrew/pgl/inst.fdw.5710/include/postgresql/server/nodes/pg_list.h \
+ /home/andrew/pgl/inst.fdw.5710/include/postgresql/server/nodes/nodes.h \
+ /home/andrew/pgl/inst.fdw.5710/include/postgresql/server/access/tupmacs.h \
+ /home/andrew/pgl/inst.fdw.5710/include/postgresql/server/storage/itemptr.h \
+ /home/andrew/pgl/inst.fdw.5710/include/postgresql/server/storage/block.h \
+ /home/andrew/pgl/inst.fdw.5710/include/postgresql/server/storage/off.h \
+ /home/andrew/pgl/inst.fdw.5710/include/postgresql/server/storage/itemid.h \
+ /home/andrew/pgl/inst.fdw.5710/include/postgresql/server/storage/relfilenode.h \
+ /home/andrew/pgl/inst.fdw.5710/include/postgresql/server/storage/backendid.h \
+ /home/andrew/pgl/inst.fdw.5710/include/postgresql/server/catalog/pg_foreign_table.h \
+ /home/andrew/pgl/inst.fdw.5710/include/postgresql/server/catalog/pg_type.h \
+ /home/andrew/pgl/inst.fdw.5710/include/postgresql/server/commands/copy.h \
+ /home/andrew/pgl/inst.fdw.5710/include/postgresql/server/nodes/execnodes.h \
+ /home/andrew/pgl/inst.fdw.5710/include/postgresql/server/access/genam.h \
+ /home/andrew/pgl/inst.fdw.5710/include/postgresql/server/access/sdir.h \
+ /home/andrew/pgl/inst.fdw.5710/include/postgresql/server/access/skey.h \
+ /home/andrew/pgl/inst.fdw.5710/include/postgresql/server/fmgr.h \
+ /home/andrew/pgl/inst.fdw.5710/include/postgresql/server/nodes/tidbitmap.h \
+ /home/andrew/pgl/inst.fdw.5710/include/postgresql/server/storage/buf.h \
+ /home/andrew/pgl/inst.fdw.5710/include/postgresql/server/storage/lock.h \
+ /home/andrew/pgl/inst.fdw.5710/include/postgresql/server/storage/lwlock.h \
+ /home/andrew/pgl/inst.fdw.5710/include/postgresql/server/storage/shmem.h \
+ /home/andrew/pgl/inst.fdw.5710/include/postgresql/server/utils/hsearch.h \
+ /home/andrew/pgl/inst.fdw.5710/include/postgresql/server/utils/relcache.h \
+ /home/andrew/pgl/inst.fdw.5710/include/postgresql/server/nodes/bitmapset.h \
+ /home/andrew/pgl/inst.fdw.5710/include/postgresql/server/utils/snapshot.h \
+ /home/andrew/pgl/inst.fdw.5710/include/postgresql/server/access/heapam.h \
+ /home/andrew/pgl/inst.fdw.5710/include/postgresql/server/access/xlog.h \
+ /home/andrew/pgl/inst.fdw.5710/include/postgresql/server/access/rmgr.h \
+ /home/andrew/pgl/inst.fdw.5710/include/postgresql/server/access/xlogdefs.h \
+ /home/andrew/pgl/inst.fdw.5710/include/postgresql/server/lib/stringinfo.h \
+ /home/andrew/pgl/inst.fdw.5710/include/postgresql/server/utils/pg_crc.h \
+ /home/andrew/pgl/inst.fdw.5710/include/postgresql/server/utils/timestamp.h \
+ /home/andrew/pgl/inst.fdw.5710/include/postgresql/server/pgtime.h \
+ /home/andrew/pgl/inst.fdw.5710/include/postgresql/server/utils/int8.h \
+ /home/andrew/pgl/inst.fdw.5710/include/postgresql/server/nodes/primnodes.h \
+ /home/andrew/pgl/inst.fdw.5710/include/postgresql/server/storage/bufpage.h \
+ /home/andrew/pgl/inst.fdw.5710/include/postgresql/server/storage/item.h \
+ /home/andrew/pgl/inst.fdw.5710/include/postgresql/server/nodes/params.h \
+ /home/andrew/pgl/inst.fdw.5710/include/postgresql/server/nodes/plannodes.h \
+ /home/andrew/pgl/inst.fdw.5710/include/postgresql/server/utils/rel.h \
+ /home/andrew/pgl/inst.fdw.5710/include/postgresql/server/catalog/pg_am.h \
+ /home/andrew/pgl/inst.fdw.5710/include/postgresql/server/catalog/pg_class.h \
+ /home/andrew/pgl/inst.fdw.5710/include/postgresql/server/catalog/pg_index.h \
+ /home/andrew/pgl/inst.fdw.5710/include/postgresql/server/rewrite/prs2lock.h \
+ /home/andrew/pgl/inst.fdw.5710/include/postgresql/server/utils/tuplestore.h \
+ /home/andrew/pgl/inst.fdw.5710/include/postgresql/server/executor/tuptable.h \
+ /home/andrew/pgl/inst.fdw.5710/include/postgresql/server/nodes/parsenodes.h \
+ /home/andrew/pgl/inst.fdw.5710/include/postgresql/server/nodes/value.h \
+ /home/andrew/pgl/inst.fdw.5710/include/postgresql/server/tcop/dest.h \
+ /home/andrew/pgl/inst.fdw.5710/include/postgresql/server/commands/defrem.h \
+ /home/andrew/pgl/inst.fdw.5710/include/postgresql/server/commands/explain.h \
+ /home/andrew/pgl/inst.fdw.5710/include/postgresql/server/executor/executor.h \
+ /home/andrew/pgl/inst.fdw.5710/include/postgresql/server/executor/execdesc.h \
+ /home/andrew/pgl/inst.fdw.5710/include/postgresql/server/foreign/fdwapi.h \
+ /home/andrew/pgl/inst.fdw.5710/include/postgresql/server/nodes/relation.h \
+ /home/andrew/pgl/inst.fdw.5710/include/postgresql/server/foreign/foreign.h \
+ /home/andrew/pgl/inst.fdw.5710/include/postgresql/server/miscadmin.h \
+ /home/andrew/pgl/inst.fdw.5710/include/postgresql/server/pgtime.h \
+ /home/andrew/pgl/inst.fdw.5710/include/postgresql/server/optimizer/cost.h \
+ /home/andrew/pgl/inst.fdw.5710/include/postgresql/server/utils/array.h \
+ /home/andrew/pgl/inst.fdw.5710/include/postgresql/server/utils/builtins.h
+
+/home/andrew/pgl/inst.fdw.5710/include/postgresql/server/postgres.h:
+
+/home/andrew/pgl/inst.fdw.5710/include/postgresql/server/c.h:
+
+/home/andrew/pgl/inst.fdw.5710/include/postgresql/server/pg_config.h:
+
+/home/andrew/pgl/inst.fdw.5710/include/postgresql/server/pg_config_manual.h:
+
+/home/andrew/pgl/inst.fdw.5710/include/postgresql/server/pg_config_os.h:
+
+/home/andrew/pgl/inst.fdw.5710/include/postgresql/server/postgres_ext.h:
+
+/home/andrew/pgl/inst.fdw.5710/include/postgresql/server/port.h:
+
+/home/andrew/pgl/inst.fdw.5710/include/postgresql/server/utils/elog.h:
+
+/home/andrew/pgl/inst.fdw.5710/include/postgresql/server/utils/errcodes.h:
+
+/home/andrew/pgl/inst.fdw.5710/include/postgresql/server/utils/palloc.h:
+
+/home/andrew/pgl/inst.fdw.5710/include/postgresql/server/access/reloptions.h:
+
+/home/andrew/pgl/inst.fdw.5710/include/postgresql/server/access/htup.h:
+
+/home/andrew/pgl/inst.fdw.5710/include/postgresql/server/access/tupdesc.h:
+
+/home/andrew/pgl/inst.fdw.5710/include/postgresql/server/access/attnum.h:
+
+/home/andrew/pgl/inst.fdw.5710/include/postgresql/server/catalog/pg_attribute.h:
+
+/home/andrew/pgl/inst.fdw.5710/include/postgresql/server/catalog/genbki.h:
+
+/home/andrew/pgl/inst.fdw.5710/include/postgresql/server/nodes/pg_list.h:
+
+/home/andrew/pgl/inst.fdw.5710/include/postgresql/server/nodes/nodes.h:
+
+/home/andrew/pgl/inst.fdw.5710/include/postgresql/server/access/tupmacs.h:
+
+/home/andrew/pgl/inst.fdw.5710/include/postgresql/server/storage/itemptr.h:
+
+/home/andrew/pgl/inst.fdw.5710/include/postgresql/server/storage/block.h:
+
+/home/andrew/pgl/inst.fdw.5710/include/postgresql/server/storage/off.h:
+
+/home/andrew/pgl/inst.fdw.5710/include/postgresql/server/storage/itemid.h:
+
+/home/andrew/pgl/inst.fdw.5710/include/postgresql/server/storage/relfilenode.h:
+
+/home/andrew/pgl/inst.fdw.5710/include/postgresql/server/storage/backendid.h:
+
+/home/andrew/pgl/inst.fdw.5710/include/postgresql/server/catalog/pg_foreign_table.h:
+
+/home/andrew/pgl/inst.fdw.5710/include/postgresql/server/catalog/pg_type.h:
+
+/home/andrew/pgl/inst.fdw.5710/include/postgresql/server/commands/copy.h:
+
+/home/andrew/pgl/inst.fdw.5710/include/postgresql/server/nodes/execnodes.h:
+
+/home/andrew/pgl/inst.fdw.5710/include/postgresql/server/access/genam.h:
+
+/home/andrew/pgl/inst.fdw.5710/include/postgresql/server/access/sdir.h:
+
+/home/andrew/pgl/inst.fdw.5710/include/postgresql/server/access/skey.h:
+
+/home/andrew/pgl/inst.fdw.5710/include/postgresql/server/fmgr.h:
+
+/home/andrew/pgl/inst.fdw.5710/include/postgresql/server/nodes/tidbitmap.h:
+
+/home/andrew/pgl/inst.fdw.5710/include/postgresql/server/storage/buf.h:
+
+/home/andrew/pgl/inst.fdw.5710/include/postgresql/server/storage/lock.h:
+
+/home/andrew/pgl/inst.fdw.5710/include/postgresql/server/storage/lwlock.h:
+
+/home/andrew/pgl/inst.fdw.5710/include/postgresql/server/storage/shmem.h:
+
+/home/andrew/pgl/inst.fdw.5710/include/postgresql/server/utils/hsearch.h:
+
+/home/andrew/pgl/inst.fdw.5710/include/postgresql/server/utils/relcache.h:
+
+/home/andrew/pgl/inst.fdw.5710/include/postgresql/server/nodes/bitmapset.h:
+
+/home/andrew/pgl/inst.fdw.5710/include/postgresql/server/utils/snapshot.h:
+
+/home/andrew/pgl/inst.fdw.5710/include/postgresql/server/access/heapam.h:
+
+/home/andrew/pgl/inst.fdw.5710/include/postgresql/server/access/xlog.h:
+
+/home/andrew/pgl/inst.fdw.5710/include/postgresql/server/access/rmgr.h:
+
+/home/andrew/pgl/inst.fdw.5710/include/postgresql/server/access/xlogdefs.h:
+
+/home/andrew/pgl/inst.fdw.5710/include/postgresql/server/lib/stringinfo.h:
+
+/home/andrew/pgl/inst.fdw.5710/include/postgresql/server/utils/pg_crc.h:
+
+/home/andrew/pgl/inst.fdw.5710/include/postgresql/server/utils/timestamp.h:
+
+/home/andrew/pgl/inst.fdw.5710/include/postgresql/server/pgtime.h:
+
+/home/andrew/pgl/inst.fdw.5710/include/postgresql/server/utils/int8.h:
+
+/home/andrew/pgl/inst.fdw.5710/include/postgresql/server/nodes/primnodes.h:
+
+/home/andrew/pgl/inst.fdw.5710/include/postgresql/server/storage/bufpage.h:
+
+/home/andrew/pgl/inst.fdw.5710/include/postgresql/server/storage/item.h:
+
+/home/andrew/pgl/inst.fdw.5710/include/postgresql/server/nodes/params.h:
+
+/home/andrew/pgl/inst.fdw.5710/include/postgresql/server/nodes/plannodes.h:
+
+/home/andrew/pgl/inst.fdw.5710/include/postgresql/server/utils/rel.h:
+
+/home/andrew/pgl/inst.fdw.5710/include/postgresql/server/catalog/pg_am.h:
+
+/home/andrew/pgl/inst.fdw.5710/include/postgresql/server/catalog/pg_class.h:
+
+/home/andrew/pgl/inst.fdw.5710/include/postgresql/server/catalog/pg_index.h:
+
+/home/andrew/pgl/inst.fdw.5710/include/postgresql/server/rewrite/prs2lock.h:
+
+/home/andrew/pgl/inst.fdw.5710/include/postgresql/server/utils/tuplestore.h:
+
+/home/andrew/pgl/inst.fdw.5710/include/postgresql/server/executor/tuptable.h:
+
+/home/andrew/pgl/inst.fdw.5710/include/postgresql/server/nodes/parsenodes.h:
+
+/home/andrew/pgl/inst.fdw.5710/include/postgresql/server/nodes/value.h:
+
+/home/andrew/pgl/inst.fdw.5710/include/postgresql/server/tcop/dest.h:
+
+/home/andrew/pgl/inst.fdw.5710/include/postgresql/server/commands/defrem.h:
+
+/home/andrew/pgl/inst.fdw.5710/include/postgresql/server/commands/explain.h:
+
+/home/andrew/pgl/inst.fdw.5710/include/postgresql/server/executor/executor.h:
+
+/home/andrew/pgl/inst.fdw.5710/include/postgresql/server/executor/execdesc.h:
+
+/home/andrew/pgl/inst.fdw.5710/include/postgresql/server/foreign/fdwapi.h:
+
+/home/andrew/pgl/inst.fdw.5710/include/postgresql/server/nodes/relation.h:
+
+/home/andrew/pgl/inst.fdw.5710/include/postgresql/server/foreign/foreign.h:
+
+/home/andrew/pgl/inst.fdw.5710/include/postgresql/server/miscadmin.h:
+
+/home/andrew/pgl/inst.fdw.5710/include/postgresql/server/pgtime.h:
+
+/home/andrew/pgl/inst.fdw.5710/include/postgresql/server/optimizer/cost.h:
+
+/home/andrew/pgl/inst.fdw.5710/include/postgresql/server/utils/array.h:
+
+/home/andrew/pgl/inst.fdw.5710/include/postgresql/server/utils/builtins.h:
