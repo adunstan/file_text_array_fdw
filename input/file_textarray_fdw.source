@@ -107,7 +107,9 @@ ORDER BY c.a;
 -- error context report tests
 SELECT * FROM agg_bad;               -- ERROR
 
-SELECT * FROM agg_bad_array;               -- ERROR
+SELECT * FROM agg_bad_array;               -- NOT AN ERROR in text_array!
+
+SELECT  t[1]::int2 as a, t[2]::float4 as b FROM agg_bad_array; -- ERROR
 
 -- misc query tests
 \t on
