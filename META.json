@@ -1,0 +1,39 @@
+{
+   "name": "file_textarray_fdw",
+   "abstract": "Access to text files where each row is returned as an array of text",
+   "description": "Similar to the file Foreign data wrapper, but useful for handling cases where the number of fields per line is unknown or varies.",
+   "version": "1.0",
+   "maintainer": [
+      "Andrew Dunstan <andrew@dunslane.net>"
+   ],
+   "license": "postgresql",
+   "provides": {
+      "file_textarray_fdw: {
+         "abstract": "Access to text files where each row is returned as an array of text",
+         "file": "file_textarray_fdw.sql",
+         "docfile": "README.md",
+         "version": "1.0"
+      }
+   },
+   "resources": {
+      "bugtracker": {
+         "web": "https://github.com/adunstan/file_text_array_fdw/issues"
+      },
+      "repository": {
+        "url":  "git://github.com/adunstan/file_text_array_fdw.git",
+        "web":  "https://adunstan@github.com/adunstan/file_text_array_fdw.git",
+        "type": "git"
+      }
+   },
+   "generated_by": "Andrew Dunstan",
+   "meta-spec": {
+      "version": "1.0.0",
+      "url": "http://pgxn.org/meta/spec.txt"
+   },
+   "tags": [
+      "foreign data wrapper",
+      "text file",
+      "text array",
+      "ragged csv"
+   ]
+}
