@@ -21,7 +21,7 @@
       },
       "repository": {
         "url":  "git://github.com/adunstan/file_text_array_fdw.git",
-        "web":  "https://adunstan@github.com/adunstan/file_text_array_fdw.git",
+        "web":  "https://github.com/adunstan/file_text_array_fdw.git",
         "type": "git"
       }
    },
