@@ -354,7 +354,7 @@ filePlanForeignScan(Oid foreigntableid,
 	Cost    total_cost;
 #else
 	FdwPlan	   *fdwplan;
-#endif;
+#endif
 	char	   *filename;
 	List	   *options;
 
