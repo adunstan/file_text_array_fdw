@@ -1,5 +1,5 @@
 # file_fdw extension
 comment = 'foreign-data wrapper for flat file access as a text array'
-default_version = '1.0.0'
+default_version = '1.0.1'
 module_pathname = '$libdir/file_textarray_fdw'
 relocatable = true
