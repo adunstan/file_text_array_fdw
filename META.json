@@ -2,7 +2,7 @@
    "name": "file_textarray_fdw",
    "abstract": "Access to text files where each row is returned as an array of text",
    "description": "Similar to the file Foreign data wrapper, but useful for handling cases where the number of fields per line is unknown or varies.",
-   "version": "1.0",
+   "version": "1.0.0",
    "maintainer": [
       "Andrew Dunstan <andrew@dunslane.net>"
    ],
