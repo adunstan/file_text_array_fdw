@@ -8,11 +8,11 @@
    ],
    "license": "postgresql",
    "provides": {
-      "file_textarray_fdw: {
+      "file_textarray_fdw": {
          "abstract": "Access to text files where each row is returned as an array of text",
          "file": "file_textarray_fdw.sql",
          "docfile": "README.md",
-         "version": "1.0"
+         "version": "1.0.0"
       }
    },
    "resources": {
