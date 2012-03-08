@@ -1,8 +1,8 @@
 ### File Text Array Foreign Data Wrapper for PostgreSQL
 
 This FDW is similar to the provided file_fdw, except that instead 
-of the foreign table having named fields to match the fileds in the
-data file, it should have a single filed of type text[]. The parsed
+of the foreign table having named fields to match the fields in the
+data file, it should have a single field of type text[]. The parsed
 fields will be stashed in the array. This is useful if you don't
 know how many fields are in the file, or if the number can vary
 from line to line. Unlike standard COPY files and the file_fdw
