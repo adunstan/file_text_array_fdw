@@ -26,8 +26,14 @@
 #include "foreign/foreign.h"
 #include "miscadmin.h"
 #include "optimizer/cost.h"
+#if PG_VERSION_NUM >= 90200
+#include "optimizer/pathnode.h"
+#endif
 #include "utils/array.h"
 #include "utils/builtins.h"
+#if PG_VERSION_NUM >= 90200
+#include "utils/rel.h"
+#endif
 
 PG_MODULE_MAGIC;
 
@@ -105,9 +111,15 @@ PG_FUNCTION_INFO_V1(file_textarray_fdw_validator);
 /*
  * FDW callback routines
  */
+#if PG_VERSION_NUM >= 90200
+static void filePlanForeignScan(Oid foreigntableid,
+									PlannerInfo *root,
+									RelOptInfo *baserel);
+#else
 static FdwPlan *filePlanForeignScan(Oid foreigntableid,
 									PlannerInfo *root,
 									RelOptInfo *baserel);
+#endif
 static void fileExplainForeignScan(ForeignScanState *node, ExplainState *es);
 static void fileBeginForeignScan(ForeignScanState *node, int eflags);
 static TupleTableSlot *fileIterateForeignScan(ForeignScanState *node);
@@ -233,6 +245,14 @@ file_textarray_fdw_validator(PG_FUNCTION_ARGS)
 	 */
 	ProcessCopyOptions(NULL, true, other_options);
 
+	/*
+	 * Filename option is required for file__textarray_fdw foreign tables.
+	 */
+	if (catalog == ForeignTableRelationId && filename == NULL)
+		ereport(ERROR,
+				(errcode(ERRCODE_FDW_DYNAMIC_PARAMETER_VALUE_NEEDED),
+				 errmsg("filename is required for file_fdw foreign tables")));
+
 	PG_RETURN_VOID();
 }
 
@@ -313,14 +333,28 @@ fileGetOptions(Oid foreigntableid,
 
 /*
  * filePlanForeignScan
- *		Create a FdwPlan for a scan on the foreign table
+ *    Create possible access paths for a scan on the foreign table
+ *
+ *    Currently we don't support any push-down feature, so there is only one
+ *    possible access path, which simply returns all records in the order in
+ *    the data file.
  */
+
+#if PG_VERSION_NUM >= 90200
+static void
+#else
 static FdwPlan *
+#endif
 filePlanForeignScan(Oid foreigntableid,
 					PlannerInfo *root,
 					RelOptInfo *baserel)
 {
+#if PG_VERSION_NUM >= 90200
+	Cost    startup_cost;
+	Cost    total_cost;
+#else
 	FdwPlan	   *fdwplan;
+#endif;
 	char	   *filename;
 	List	   *options;
 
@@ -328,12 +362,32 @@ filePlanForeignScan(Oid foreigntableid,
 	fileGetOptions(foreigntableid, &filename, &options);
 
 	/* Construct FdwPlan with cost estimates */
+#if PG_VERSION_NUM >= 90200
+	estimate_costs(root, baserel, filename,
+           &startup_cost, &total_cost);
+
+	/* Create a ForeignPath node and add it as only possible path */
+	add_path(baserel, (Path *)
+			 create_foreignscan_path(root, baserel,
+									 baserel->rows,
+									 startup_cost,
+									 total_cost,
+									 NIL, /* no pathkeys */
+									 NULL, /* no outer rel either */									 
+									 NIL,
+									 NIL)); /* no fdw_private data */
+	/*
+	 * If data file was sorted, and we knew it somehow, we could insert
+	 * appropriate pathkeys into the ForeignPath node to tell the planner that.
+	 */
+#else
 	fdwplan = makeNode(FdwPlan);
 	estimate_costs(root, baserel, filename,
 				   &fdwplan->startup_cost, &fdwplan->total_cost);
 	fdwplan->fdw_private = NIL;				/* not used */
 
 	return fdwplan;
+#endif
 }
 
 /*
