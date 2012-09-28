@@ -73,13 +73,14 @@ static const struct FileFdwOption valid_options[] = {
 	{ "encoding",		ForeignTableRelationId },
 
 	/*
-	 * force_quote is not supported by file_fdw because it's for COPY TO.
+	 * force_quote is not supported because it's for COPY TO.
 	 */
 
 	/*
-	 * force_not_null is not supported by file_fdw.  It would need a parser
-	 * for list of columns, not to mention a way to check the column list
-	 * against the table.
+	 * force_not_null is not supported, because we only have
+	 * one column, and there's no sane simple way fo saying
+	 * to force not null for some column. The user can use
+	 * coalesce() if they need to.
 	 */
 
 	/* Sentinel */
