@@ -13,6 +13,11 @@
  */
 #include "postgres.h"
 
+/* check that we are compiling for the right postgres version */
+#if PG_VERSION_NUM < 90200 || PG_VERSION_NUM >= 90300
+#error wrong Postgresql version this branch is only for 9.2
+#endif
+
 #include <sys/stat.h>
 #include <unistd.h>
 
@@ -22,24 +27,18 @@
 #include "commands/copy.h"
 #include "commands/defrem.h"
 #include "commands/explain.h"
-#if PG_VERSION_NUM >= 90200
 #include "commands/vacuum.h"
-#endif
 #include "foreign/fdwapi.h"
 #include "foreign/foreign.h"
 #include "miscadmin.h"
 #include "optimizer/cost.h"
-#if PG_VERSION_NUM >= 90200
 #include "optimizer/pathnode.h"
 #include "optimizer/planmain.h"
 #include "optimizer/restrictinfo.h"
 #include "utils/memutils.h"
-#endif
 #include "utils/array.h"
 #include "utils/builtins.h"
-#if PG_VERSION_NUM >= 90200
 #include "utils/rel.h"
-#endif
 
 PG_MODULE_MAGIC;
 
@@ -128,7 +127,6 @@ PG_FUNCTION_INFO_V1(file_textarray_fdw_validator);
 /*
  * FDW callback routines
  */
-#if PG_VERSION_NUM >= 90200
 static void fileGetForeignRelSize(PlannerInfo *root,
                                  RelOptInfo *baserel,
                                  Oid foreigntableid);
@@ -141,21 +139,14 @@ static ForeignScan *fileGetForeignPlan(PlannerInfo *root,
                                       ForeignPath *best_path,
                                       List *tlist,
                                       List *scan_clauses);
-#else
-static FdwPlan *filePlanForeignScan(Oid foreigntableid,
-									PlannerInfo *root,
-									RelOptInfo *baserel);
-#endif
 static void fileExplainForeignScan(ForeignScanState *node, ExplainState *es);
 static void fileBeginForeignScan(ForeignScanState *node, int eflags);
 static TupleTableSlot *fileIterateForeignScan(ForeignScanState *node);
 static void fileReScanForeignScan(ForeignScanState *node);
 static void fileEndForeignScan(ForeignScanState *node);
-#if PG_VERSION_NUM >= 90200
 static bool fileAnalyzeForeignTable(Relation relation,
                        AcquireSampleRowsFunc *func,
                        BlockNumber *totalpages);
-#endif
 
 /* text array support */
 
@@ -169,7 +160,6 @@ static void check_table_shape(Relation rel);
 static bool is_valid_option(const char *option, Oid context);
 static void fileGetOptions(Oid foreigntableid,
 			   char **filename, List **other_options);
-#if PG_VERSION_NUM >= 90200
 static void estimate_size(PlannerInfo *root, RelOptInfo *baserel,
 						  FileFdwPlanState *fdw_private);
 static void estimate_costs(PlannerInfo *root, RelOptInfo *baserel,
@@ -178,11 +168,6 @@ static void estimate_costs(PlannerInfo *root, RelOptInfo *baserel,
 static int file_acquire_sample_rows(Relation onerel, int elevel,
 									HeapTuple *rows, int targrows,
 									double *totalrows, double *totaldeadrows);
-#else
-static void estimate_costs(PlannerInfo *root, RelOptInfo *baserel,
-						   const char *filename,
-						   Cost *startup_cost, Cost *total_cost);
-#endif
 
 /*
  * Foreign-data wrapper handler function: return a struct with pointers
@@ -193,14 +178,10 @@ file_textarray_fdw_handler(PG_FUNCTION_ARGS)
 {
 	FdwRoutine *fdwroutine = makeNode(FdwRoutine);
 
-#if PG_VERSION_NUM >= 90200
 	fdwroutine->GetForeignRelSize = fileGetForeignRelSize;
 	fdwroutine->GetForeignPaths = fileGetForeignPaths;
 	fdwroutine->GetForeignPlan = fileGetForeignPlan;
 	fdwroutine->AnalyzeForeignTable = fileAnalyzeForeignTable;	
-#else
-	fdwroutine->PlanForeignScan = filePlanForeignScan;
-#endif
 	fdwroutine->ExplainForeignScan = fileExplainForeignScan;
 	fdwroutine->BeginForeignScan = fileBeginForeignScan;
 	fdwroutine->IterateForeignScan = fileIterateForeignScan;
@@ -385,7 +366,6 @@ fileGetOptions(Oid foreigntableid,
  * fileGetForeignRelSize
  *		Obtain relation size estimates for a foreign table
  */
-#if PG_VERSION_NUM >= 90200
 static void
 fileGetForeignRelSize(PlannerInfo *root,
 					  RelOptInfo *baserel,
@@ -405,38 +385,6 @@ fileGetForeignRelSize(PlannerInfo *root,
 	/* Estimate relation size */
 	estimate_size(root, baserel, fdw_private);
 }
-#endif
-
-#if PG_VERSION_NUM < 90200
-/*
- * filePlanForeignScan
- *    Create possible access paths for a scan on the foreign table
- *
- *    Currently we don't support any push-down feature, so there is only one
- *    possible access path, which simply returns all records in the order in
- *    the data file.
- */
-static FdwPlan *
-filePlanForeignScan(Oid foreigntableid,
-					PlannerInfo *root,
-					RelOptInfo *baserel)
-{
-	FdwPlan	   *fdwplan;
-	char	   *filename;
-	List	   *options;
-
-	/* Fetch options --- we only need filename at this point */
-	fileGetOptions(foreigntableid, &filename, &options);
-
-	/* Construct FdwPlan with cost estimates */
-	fdwplan = makeNode(FdwPlan);
-	estimate_costs(root, baserel, filename,
-				   &fdwplan->startup_cost, &fdwplan->total_cost);
-	fdwplan->fdw_private = NIL;				/* not used */
-
-	return fdwplan;
-}
-#else
 
 /*
  * fileGetForeignPaths
@@ -506,8 +454,6 @@ fileGetForeignPlan(PlannerInfo *root,
 							NIL,	/* no expressions to evaluate */
 							NIL);		/* no private state either */
 }
-
-#endif
 
 /*
  * fileExplainForeignScan
@@ -693,8 +639,6 @@ fileReScanForeignScan(ForeignScanState *node)
 									NIL,
 									festate->options);
 }
-
-#if PG_VERSION_NUM >= 90200
 
 /*
  * fileAnalyzeForeignTable
@@ -993,84 +937,6 @@ file_acquire_sample_rows(Relation onerel, int elevel,
 
 	return numrows;
 }
-
-#else
-
-/*
- * Estimate costs of scanning a foreign table.
- */
-static void
-estimate_costs(PlannerInfo *root, RelOptInfo *baserel,
-			   const char *filename,
-			   Cost *startup_cost, Cost *total_cost)
-{
-	struct stat		stat_buf;
-	BlockNumber		pages;
-	int				tuple_width;
-	double			ntuples;
-	double			nrows;
-	Cost			run_cost = 0;
-	Cost			cpu_per_tuple;
-
-	/*
-	 * Get size of the file.  It might not be there at plan time, though,
-	 * in which case we have to use a default estimate.
-	 */
-	if (stat(filename, &stat_buf) < 0)
-		stat_buf.st_size = 10 * BLCKSZ;
-
-	/*
-	 * Convert size to pages for use in I/O cost estimate below.
-	 */
-	pages = (stat_buf.st_size + (BLCKSZ-1)) / BLCKSZ;
-	if (pages < 1)
-		pages = 1;
-
-	/*
-	 * Estimate the number of tuples in the file.  We back into this estimate
-	 * using the planner's idea of the relation width; which is bogus if not
-	 * all columns are being read, not to mention that the text representation
-	 * of a row probably isn't the same size as its internal representation.
-	 * FIXME later.
-	 */
-	tuple_width = MAXALIGN(baserel->width) + MAXALIGN(sizeof(HeapTupleHeaderData));
-
-	ntuples = clamp_row_est((double) stat_buf.st_size / (double) tuple_width);
-
-	/*
-	 * Now estimate the number of rows returned by the scan after applying
-	 * the baserestrictinfo quals.  This is pretty bogus too, since the
-	 * planner will have no stats about the relation, but it's better than
-	 * nothing.
-	 */
-	nrows = ntuples *
-		clauselist_selectivity(root,
-							   baserel->baserestrictinfo,
-							   0,
-							   JOIN_INNER,
-							   NULL);
-
-	nrows = clamp_row_est(nrows);
-
-	/* Save the output-rows estimate for the planner */
-	baserel->rows = nrows;
-
-	/*
-	 * Now estimate costs.  We estimate costs almost the same way as
-	 * cost_seqscan(), thus assuming that I/O costs are equivalent to a
-	 * regular table file of the same size.  However, we take per-tuple CPU
-	 * costs as 10x of a seqscan, to account for the cost of parsing records.
-	 */
-	run_cost += seq_page_cost * pages;
-
-	*startup_cost = baserel->baserestrictcost.startup;
-	cpu_per_tuple = cpu_tuple_cost * 10 + baserel->baserestrictcost.per_tuple;
-	run_cost += cpu_per_tuple * ntuples;
-	*total_cost = *startup_cost + run_cost;
-}
-
-#endif
-
 
 /*
  * Make sure the table is the right shape. i.e. it must have exactly one column,
