@@ -21,6 +21,7 @@
 #include <sys/stat.h>
 #include <unistd.h>
 
+#include "access/htup_details.h"
 #include "access/reloptions.h"
 #include "catalog/pg_foreign_table.h"
 #include "catalog/pg_type.h"
