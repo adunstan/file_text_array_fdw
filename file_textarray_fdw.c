@@ -571,16 +571,16 @@ fileIterateForeignScan(ForeignScanState *node)
 	FileFdwExecutionState *festate = (FileFdwExecutionState *) node->fdw_state;
 	TupleTableSlot *slot = node->ss.ss_ScanTupleSlot;
 	bool			found;
-	ErrorContextCallback errcontext;
+	ErrorContextCallback err_context;
 	char          **raw_fields;
 	int             nfields;
         
 
 	/* Set up callback to identify error line number. */
-	errcontext.callback = CopyFromErrorCallback;
-	errcontext.arg = (void *) festate->cstate;
-	errcontext.previous = error_context_stack;
-	error_context_stack = &errcontext;
+	err_context.callback = CopyFromErrorCallback;
+	err_context.arg = (void *) festate->cstate;
+	err_context.previous = error_context_stack;
+	error_context_stack = &err_context;
 
 	/*
 	 * The protocol for loading a virtual tuple into a slot is first
@@ -606,7 +606,7 @@ fileIterateForeignScan(ForeignScanState *node)
 	}
 
 	/* Remove error callback. */
-	error_context_stack = errcontext.previous;
+	error_context_stack = err_context.previous;
 
 	return slot;
 }
@@ -822,7 +822,7 @@ file_acquire_sample_rows(Relation onerel, int elevel,
 	char	   *filename;
 	List	   *options;
 	CopyState	cstate;
-	ErrorContextCallback errcontext;
+	ErrorContextCallback err_context;
 	MemoryContext oldcontext = CurrentMemoryContext;
 	MemoryContext tupcontext;
 
@@ -855,10 +855,10 @@ file_acquire_sample_rows(Relation onerel, int elevel,
 	rstate = anl_init_selection_state(targrows);
 
 	/* Set up callback to identify error line number. */
-	errcontext.callback = CopyFromErrorCallback;
-	errcontext.arg = (void *) cstate;
-	errcontext.previous = error_context_stack;
-	error_context_stack = &errcontext;
+	err_context.callback = CopyFromErrorCallback;
+	err_context.arg = (void *) cstate;
+	err_context.previous = error_context_stack;
+	error_context_stack = &err_context;
 
 	*totalrows = 0;
 	*totaldeadrows = 0;
@@ -918,7 +918,7 @@ file_acquire_sample_rows(Relation onerel, int elevel,
 	}
 
 	/* Remove error callback. */
-	error_context_stack = errcontext.previous;
+	error_context_stack = err_context.previous;
 
 	/* Clean up. */
 	MemoryContextDelete(tupcontext);
