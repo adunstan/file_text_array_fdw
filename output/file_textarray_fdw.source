@@ -187,10 +187,6 @@ DELETE FROM agg_csv_array WHERE a = 100;
 ERROR:  column "a" does not exist
 LINE 1: DELETE FROM agg_csv_array WHERE a = 100;
                                         ^
-SELECT * FROM agg_csv_array FOR UPDATE OF agg_csv_array;
-ERROR:  SELECT FOR UPDATE/SHARE cannot be used with foreign table "agg_csv_array"
-LINE 1: SELECT * FROM agg_csv_array FOR UPDATE OF agg_csv_array;
-                                                  ^
 -- but this should be ignored
 SELECT * FROM agg_csv_array FOR UPDATE;
       t       
