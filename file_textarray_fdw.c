@@ -2,7 +2,7 @@
  *
  * file_textarray_fdw.c
  *		  foreign-data wrapper for server-side flat files, returned as a
- *        single text array field.        
+ *        single text array field.
  *
  * Copyright (c) 2010-2011, PostgreSQL Global Development Group
  *
@@ -40,6 +40,7 @@
 #include "utils/array.h"
 #include "utils/builtins.h"
 #include "utils/rel.h"
+#include "utils/sampling.h"
 
 PG_MODULE_MAGIC;
 
@@ -183,7 +184,7 @@ file_textarray_fdw_handler(PG_FUNCTION_ARGS)
 	fdwroutine->GetForeignRelSize = fileGetForeignRelSize;
 	fdwroutine->GetForeignPaths = fileGetForeignPaths;
 	fdwroutine->GetForeignPlan = fileGetForeignPlan;
-	fdwroutine->AnalyzeForeignTable = fileAnalyzeForeignTable;	
+	fdwroutine->AnalyzeForeignTable = fileAnalyzeForeignTable;
 	fdwroutine->ExplainForeignScan = fileExplainForeignScan;
 	fdwroutine->BeginForeignScan = fileBeginForeignScan;
 	fdwroutine->IterateForeignScan = fileIterateForeignScan;
@@ -455,7 +456,7 @@ fileGetForeignPlan(PlannerInfo *root,
 							scan_relid,
 							NIL,	/* no expressions to evaluate */
 							NIL,	/* no private state either */
-							NIL);   /* no custom tlist */ 
+							NIL);   /* no custom tlist */
 }
 
 /*
@@ -556,7 +557,7 @@ fileBeginForeignScan(ForeignScanState *node, int eflags)
 	}
 	if (null_print == NULL) /* option not set - we're using the default */
 		festate->emptynull =  is_csv;
-	else 
+	else
 		festate->emptynull = (strlen(null_print) == 0);
 
 	node->fdw_state = (void *) festate;
@@ -576,7 +577,7 @@ fileIterateForeignScan(ForeignScanState *node)
 	ErrorContextCallback err_context;
 	char          **raw_fields;
 	int             nfields;
-        
+
 
 	/* Set up callback to identify error line number. */
 	err_context.callback = CopyFromErrorCallback;
@@ -817,7 +818,7 @@ file_acquire_sample_rows(Relation onerel, int elevel,
 {
 	int			numrows = 0;
 	double		rowstoskip = -1;	/* -1 means not set yet */
-	double		rstate;
+	ReservoirStateData	rstate;
 	TupleDesc	tupDesc;
 	Datum	   *values;
 	bool	   *nulls;
@@ -855,7 +856,7 @@ file_acquire_sample_rows(Relation onerel, int elevel,
 									   ALLOCSET_DEFAULT_MAXSIZE);
 
 	/* Prepare for sampling rows */
-	rstate = anl_init_selection_state(targrows);
+	reservoir_init_selection_state(&rstate, targrows);
 
 	/* Set up callback to identify error line number. */
 	err_context.callback = CopyFromErrorCallback;
@@ -899,7 +900,7 @@ file_acquire_sample_rows(Relation onerel, int elevel,
 			 * not-yet-incremented value of totalrows as t.
 			 */
 			if (rowstoskip < 0)
-				rowstoskip = anl_get_next_S(*totalrows, targrows, &rstate);
+				rowstoskip = reservoir_get_next_S(&rstate, *totalrows, targrows);
 
 			if (rowstoskip <= 0)
 			{
@@ -907,7 +908,7 @@ file_acquire_sample_rows(Relation onerel, int elevel,
 				 * Found a suitable tuple, so save it, replacing one old tuple
 				 * at random
 				 */
-				int			k = (int) (targrows * anl_random_fract());
+				int			k = (int) (targrows * sampler_random_fract());
 
 				Assert(k >= 0 && k < targrows);
 				heap_freetuple(rows[k]);
@@ -952,7 +953,7 @@ static void
 check_table_shape(Relation rel)
 {
 	TupleDesc       tupDesc;
-	Form_pg_attribute *attr; 
+	Form_pg_attribute *attr;
 	int         attr_count;
 	int         i;
 	int         elem1 = -1;
@@ -984,10 +985,10 @@ check_table_shape(Relation rel)
 }
 
 /*
- * Construct the text array from the read in data, and stash it in the slot 
- */ 
+ * Construct the text array from the read in data, and stash it in the slot
+ */
 
-static void 
+static void
 makeTextArray(FileFdwExecutionState *fdw_private, TupleTableSlot *slot, char **raw_fields, int nfields)
 {
 	Datum     *values;
@@ -999,14 +1000,14 @@ makeTextArray(FileFdwExecutionState *fdw_private, TupleTableSlot *slot, char **r
 	int        fldct = nfields;
 	char      *string;
 
-	if (nfields == 1 && 
-		raw_fields[0] == NULL  
+	if (nfields == 1 &&
+		raw_fields[0] == NULL
 		&& fdw_private->emptynull
 		   )
 	{
 		/* Treat an empty line as having no fields */
 		fldct = 0;
-	}	
+	}
 	else if (nfields > fdw_private->text_array_stash_size)
 	{
 		/* make sure the workspace is big enough */
@@ -1018,7 +1019,7 @@ makeTextArray(FileFdwExecutionState *fdw_private, TupleTableSlot *slot, char **r
 			fdw_private->text_array_stash_size * sizeof(Datum));
 		fdw_private->text_array_nulls =repalloc(
 			fdw_private->text_array_nulls,
-			fdw_private->text_array_stash_size * sizeof(bool));		
+			fdw_private->text_array_stash_size * sizeof(bool));
 	}
 
 	values = fdw_private->text_array_values;
@@ -1040,13 +1041,13 @@ makeTextArray(FileFdwExecutionState *fdw_private, TupleTableSlot *slot, char **r
 		{
 			nulls[fld] = false;
 			values[fld] = PointerGetDatum(
-				DirectFunctionCall1(textin, 
+				DirectFunctionCall1(textin,
 									PointerGetDatum(string)));
 		}
 	}
 
 	result = PointerGetDatum(construct_md_array(
-								 values, 
+								 values,
 								 nulls,
 								 1,
 								 dims,
