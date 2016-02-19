@@ -749,7 +749,7 @@ estimate_size(PlannerInfo *root, RelOptInfo *baserel,
 		 */
 		int			tuple_width;
 
-		tuple_width = MAXALIGN(baserel->width) +
+		tuple_width = MAXALIGN(baserel->reltarget.width) +
 			MAXALIGN(sizeof(HeapTupleHeaderData));
 		ntuples = clamp_row_est((double) stat_buf.st_size /
 								(double) tuple_width);
