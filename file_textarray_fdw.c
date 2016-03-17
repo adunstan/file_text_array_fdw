@@ -413,6 +413,7 @@ fileGetForeignPaths(PlannerInfo *root,
 	/* Create a ForeignPath node and add it as only possible path */
 	add_path(baserel, (Path *)
 			 create_foreignscan_path(root, baserel,
+									 NULL,		/* default pathtarget */
 									 baserel->rows,
 									 startup_cost,
 									 total_cost,
@@ -749,7 +750,7 @@ estimate_size(PlannerInfo *root, RelOptInfo *baserel,
 		 */
 		int			tuple_width;
 
-		tuple_width = MAXALIGN(baserel->reltarget.width) +
+		tuple_width = MAXALIGN(baserel->reltarget->width) +
 			MAXALIGN(sizeof(HeapTupleHeaderData));
 		ntuples = clamp_row_est((double) stat_buf.st_size /
 								(double) tuple_width);
