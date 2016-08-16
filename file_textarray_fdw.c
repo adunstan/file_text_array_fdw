@@ -14,8 +14,8 @@
 #include "postgres.h"
 
 /* check that we are compiling for the right postgres version */
-#if PG_VERSION_NUM < 90600
-#error wrong Postgresql version this branch is only for 9.6
+#if PG_VERSION_NUM < 100000
+#error wrong Postgresql version this branch is only for 10
 #endif
 
 #include <sys/stat.h>
