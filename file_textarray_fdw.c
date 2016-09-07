@@ -277,7 +277,7 @@ file_textarray_fdw_validator(PG_FUNCTION_ARGS)
 	/*
 	 * Now apply the core COPY code's validation logic for more checks.
 	 */
-	ProcessCopyOptions(NULL, true, other_options);
+	ProcessCopyOptions(NULL, NULL, true, other_options);
 
 	/*
 	 * Filename option is required for file__textarray_fdw foreign tables.
@@ -523,7 +523,8 @@ fileBeginForeignScan(ForeignScanState *node, int eflags)
 	 * Create CopyState from FDW options.  We always acquire all columns,
 	 * so as to match the expected ScanTupleSlot signature.
 	 */
-	cstate = BeginCopyFrom(node->ss.ss_currentRelation,
+	cstate = BeginCopyFrom(NULL,
+		                   node->ss.ss_currentRelation,
 						   filename,
 						   false,
 						   NIL,
@@ -645,7 +646,8 @@ fileReScanForeignScan(ForeignScanState *node)
 
 	EndCopyFrom(festate->cstate);
 
-	festate->cstate = BeginCopyFrom(node->ss.ss_currentRelation,
+	festate->cstate = BeginCopyFrom(NULL,
+		                            node->ss.ss_currentRelation,
 									festate->filename,
 									false,
 									NIL,
@@ -849,7 +851,7 @@ file_acquire_sample_rows(Relation onerel, int elevel,
 	/*
 	 * Create CopyState from FDW options.
 	 */
-	cstate = BeginCopyFrom(onerel, filename, false, NIL, options);
+	cstate = BeginCopyFrom(NULL, onerel, filename, false, NIL, options);
 
 	/*
 	 * Use per-tuple memory context to prevent leak of memory used to read
