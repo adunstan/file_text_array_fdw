@@ -963,18 +963,16 @@ static void
 check_table_shape(Relation rel)
 {
 	TupleDesc       tupDesc;
-	Form_pg_attribute *attr; 
 	int         attr_count;
 	int         i;
 	int         elem1 = -1;
 
 	tupDesc = RelationGetDescr(rel);
-	attr = tupDesc->attrs;
 	attr_count  = tupDesc->natts;
 
 	for (i = 0; i < attr_count; i++)
 	{
-		if (attr[i]->attisdropped)
+		if (TupleDescAttr(tupDesc, i)->attisdropped)
 			continue;
 		if (elem1 > -1)
 			ereport(ERROR,
@@ -987,11 +985,10 @@ check_table_shape(Relation rel)
 				(errcode(ERRCODE_FDW_UNABLE_TO_CREATE_REPLY),
 				 errmsg("table for file_textarray_fdw foreign tables must have one column")));
 		;
-	if (tupDesc->attrs[elem1]->atttypid != TEXTARRAYOID)
+	if (TupleDescAttr(tupDesc, elem1)->atttypid != TEXTARRAYOID)
 			ereport(ERROR,
 				(errcode(ERRCODE_FDW_UNABLE_TO_CREATE_REPLY),
 				 errmsg("table for file_textarray_fdw foreign tables must consist of a text[] column")));
-
 }
 
 /*
