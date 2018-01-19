@@ -219,7 +219,7 @@ SELECT * FROM agg_text_array ORDER BY t[1]::int2;
 
 SET ROLE no_priv_user;
 SELECT * FROM agg_text_array ORDER BY t[1]::int2;   -- ERROR
-ERROR:  permission denied for relation agg_text_array
+ERROR:  permission denied for foreign table agg_text_array
 SET ROLE file_textarray_fdw_user;
 \t on
 EXPLAIN (VERBOSE, COSTS FALSE) SELECT * FROM agg_text_array WHERE t[1]::int2 > 0;
