@@ -940,7 +940,7 @@ file_acquire_sample_rows(Relation onerel, int elevel,
 		MemoryContextReset(tupcontext);
 		MemoryContextSwitchTo(tupcontext);
 
-		found = NextCopyFrom(cstate, NULL, values, nulls, NULL);
+		found = NextCopyFrom(cstate, NULL, values, nulls);
 
 		MemoryContextSwitchTo(oldcontext);
 
