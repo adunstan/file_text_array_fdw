@@ -365,14 +365,14 @@ fileGetOptions(Oid foreigntableid,
 		if (strcmp(def->defname, "filename") == 0)
 		{
 			*filename = defGetString(def);
-			options = list_delete_cell(options, lc, prev);
+			options = foreach_delete_current(options, lc);
 			break;
 		}
 		else if (strcmp(def->defname, "program") == 0)
 		{
 			*filename = defGetString(def);
 			*is_program = true;
-			options = list_delete_cell(options, lc, prev);
+			options = foreach_delete_current(options, lc);
 			break;
 		}
 		prev = lc;
