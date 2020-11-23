@@ -111,7 +111,7 @@ typedef struct FileFdwExecutionState
 	bool            is_program; /* true if filename represents an OS command */
 	List		   *options;	/* merged COPY options, excluding filename and
 								   is_program */
-	CopyState		cstate;		/* COPY execution state */
+	CopyFromState	cstate;		/* COPY execution state */
     /* stash for processing text arrays */
 	int             text_array_stash_size;
 	Datum          *text_array_values;
@@ -519,7 +519,7 @@ fileExplainForeignScan(ForeignScanState *node, ExplainState *es)
 
 /*
  * fileBeginForeignScan
- *		Initiate access to the file by creating CopyState
+ *		Initiate access to the file by creating CopyFromState
  */
 static void
 fileBeginForeignScan(ForeignScanState *node, int eflags)
@@ -527,7 +527,7 @@ fileBeginForeignScan(ForeignScanState *node, int eflags)
 	char	   *filename;
 	bool        is_program;
 	List	   *options;
-	CopyState	cstate;
+	CopyFromState cstate;
 	FileFdwExecutionState *festate;
     char       *null_print = NULL;
     bool        is_csv = false;
@@ -546,11 +546,12 @@ fileBeginForeignScan(ForeignScanState *node, int eflags)
 				   &filename, &is_program, &options);
 
 	/*
-	 * Create CopyState from FDW options.  We always acquire all columns,
+	 * Create CopyFromState from FDW options.  We always acquire all columns,
 	 * so as to match the expected ScanTupleSlot signature.
 	 */
 	cstate = BeginCopyFrom(NULL,
 		                   node->ss.ss_currentRelation,
+						   NULL,
 						   filename,
 						   is_program,
 						   NULL,
@@ -676,6 +677,7 @@ fileReScanForeignScan(ForeignScanState *node)
 
 	festate->cstate = BeginCopyFrom(NULL,
 		                            node->ss.ss_currentRelation,
+									NULL,
 									festate->filename,
 									festate->is_program,
 									NULL,
@@ -892,7 +894,7 @@ file_acquire_sample_rows(Relation onerel, int elevel,
 	char	   *filename;
 	bool        is_program;
 	List	   *options;
-	CopyState	cstate;
+	CopyFromState cstate;
 	ErrorContextCallback err_context;
 	MemoryContext oldcontext = CurrentMemoryContext;
 	MemoryContext tupcontext;
@@ -908,9 +910,16 @@ file_acquire_sample_rows(Relation onerel, int elevel,
 	fileGetOptions(RelationGetRelid(onerel), &filename, &is_program,&options);
 
 	/*
-	 * Create CopyState from FDW options.
+	 * Create CopyFromState from FDW options.
 	 */
-	cstate = BeginCopyFrom(NULL, onerel, filename, is_program,NULL,NIL,options);
+	cstate = BeginCopyFrom(NULL,
+						   onerel,
+						   NULL,
+						   filename,
+						   is_program,
+						   NULL,
+						   NIL,
+						   options);
 
 	/*
 	 * Use per-tuple memory context to prevent leak of memory used to read
