@@ -1,254 +1,179 @@
 --
 -- Test foreign-data wrapper file_textarray_fdw.
 --
+
+-- directory paths are passed to us in environment variables
+\getenv abs_srcdir PG_ABS_SRCDIR
+
 -- Clean up in case a prior regression run failed
 SET client_min_messages TO 'error';
 DROP ROLE IF EXISTS file_textarray_fdw_superuser, file_textarray_fdw_user, no_priv_user;
 RESET client_min_messages;
+
 CREATE ROLE file_textarray_fdw_superuser LOGIN SUPERUSER; -- is a superuser
 CREATE ROLE file_textarray_fdw_user LOGIN;                -- has priv and user mapping
 CREATE ROLE no_priv_user LOGIN;                 -- has priv but no user mapping
+
 -- Install file_textarray_fdw
 CREATE EXTENSION file_textarray_fdw;
+
+-- create function to filter unstable results of EXPLAIN
+CREATE FUNCTION explain_filter(text) RETURNS setof text
+LANGUAGE plpgsql AS
+$$
+declare
+    ln text;
+begin
+    for ln in execute $1
+    loop
+        -- Remove the path portion of foreign file names
+        ln := regexp_replace(ln, 'Foreign File: .*/([a-z.]+)$', 'Foreign File: ../\1');
+        return next ln;
+    end loop;
+end;
+$$;
+
 -- file_textarray_fdw_superuser owns fdw-related objects
 SET ROLE file_textarray_fdw_superuser;
 CREATE SERVER file_server FOREIGN DATA WRAPPER file_textarray_fdw;
+
 -- privilege tests
 SET ROLE file_textarray_fdw_user;
 CREATE FOREIGN DATA WRAPPER file_textarray_fdw2 HANDLER file_textarray_fdw_handler VALIDATOR file_textarray_fdw_validator;   -- ERROR
-ERROR:  permission denied to create foreign-data wrapper "file_textarray_fdw2"
-HINT:  Must be superuser to create a foreign-data wrapper.
 CREATE SERVER file_server2 FOREIGN DATA WRAPPER file_textarray_fdw;   -- ERROR
-ERROR:  permission denied for foreign-data wrapper file_textarray_fdw
 CREATE USER MAPPING FOR file_textarray_fdw_user SERVER file_server;   -- ERROR
-ERROR:  permission denied for foreign server file_server
+
 SET ROLE file_textarray_fdw_superuser;
 GRANT USAGE ON FOREIGN SERVER file_server TO file_textarray_fdw_user;
+
 SET ROLE file_textarray_fdw_user;
 CREATE USER MAPPING FOR file_textarray_fdw_user SERVER file_server;
+
 -- create user mappings and grant privilege to test users
 SET ROLE file_textarray_fdw_superuser;
 CREATE USER MAPPING FOR file_textarray_fdw_superuser SERVER file_server;
 CREATE USER MAPPING FOR no_priv_user SERVER file_server;
+
 -- validator tests
 CREATE FOREIGN TABLE tbl () SERVER file_server OPTIONS (format 'xml');  -- ERROR
-ERROR:  COPY format "xml" not recognized
 CREATE FOREIGN TABLE tbl () SERVER file_server OPTIONS (format 'text', header 'true');      -- ERROR
-ERROR:  COPY HEADER available only in CSV mode
 CREATE FOREIGN TABLE tbl () SERVER file_server OPTIONS (format 'text', quote ':');          -- ERROR
-ERROR:  COPY quote available only in CSV mode
 CREATE FOREIGN TABLE tbl () SERVER file_server OPTIONS (format 'text', escape ':');         -- ERROR
-ERROR:  COPY escape available only in CSV mode
 CREATE FOREIGN TABLE tbl () SERVER file_server OPTIONS (format 'binary', header 'true');    -- ERROR
-ERROR:  COPY HEADER available only in CSV mode
 CREATE FOREIGN TABLE tbl () SERVER file_server OPTIONS (format 'binary', quote ':');        -- ERROR
-ERROR:  COPY quote available only in CSV mode
 CREATE FOREIGN TABLE tbl () SERVER file_server OPTIONS (format 'binary', escape ':');       -- ERROR
-ERROR:  COPY escape available only in CSV mode
 CREATE FOREIGN TABLE tbl () SERVER file_server OPTIONS (format 'text', delimiter 'a');      -- ERROR
-ERROR:  COPY delimiter cannot be "a"
 CREATE FOREIGN TABLE tbl () SERVER file_server OPTIONS (format 'text', escape '-');         -- ERROR
-ERROR:  COPY escape available only in CSV mode
 CREATE FOREIGN TABLE tbl () SERVER file_server OPTIONS (format 'csv', quote '-', null '=-=');   -- ERROR
-ERROR:  CSV quote character must not appear in the NULL specification
 CREATE FOREIGN TABLE tbl () SERVER file_server OPTIONS (format 'csv', delimiter '-', null '=-=');    -- ERROR
-ERROR:  COPY delimiter must not appear in the NULL specification
 CREATE FOREIGN TABLE tbl () SERVER file_server OPTIONS (format 'csv', delimiter '-', quote '-');    -- ERROR
-ERROR:  COPY delimiter and quote must be different
 CREATE FOREIGN TABLE tbl () SERVER file_server OPTIONS (format 'csv', delimiter '---');     -- ERROR
-ERROR:  COPY delimiter must be a single one-byte character
 CREATE FOREIGN TABLE tbl () SERVER file_server OPTIONS (format 'csv', quote '---');         -- ERROR
-ERROR:  COPY quote must be a single one-byte character
 CREATE FOREIGN TABLE tbl () SERVER file_server OPTIONS (format 'csv', escape '---');        -- ERROR
-ERROR:  COPY escape must be a single one-byte character
 CREATE FOREIGN TABLE tbl () SERVER file_server OPTIONS (format 'text', delimiter '\');       -- ERROR
-ERROR:  COPY delimiter cannot be "\"
 CREATE FOREIGN TABLE tbl () SERVER file_server OPTIONS (format 'text', delimiter '.');       -- ERROR
-ERROR:  COPY delimiter cannot be "."
 CREATE FOREIGN TABLE tbl () SERVER file_server OPTIONS (format 'text', delimiter '1');       -- ERROR
-ERROR:  COPY delimiter cannot be "1"
 CREATE FOREIGN TABLE tbl () SERVER file_server OPTIONS (format 'text', delimiter 'a');       -- ERROR
-ERROR:  COPY delimiter cannot be "a"
 CREATE FOREIGN TABLE tbl () SERVER file_server OPTIONS (format 'csv', delimiter '
 ');       -- ERROR
-ERROR:  COPY delimiter cannot be newline or carriage return
 CREATE FOREIGN TABLE tbl () SERVER file_server OPTIONS (format 'csv', null '
 ');       -- ERROR
-ERROR:  COPY null representation cannot use newline or carriage return
+
+\set filename :abs_srcdir '/data/agg.data'
+\set csvfilename :abs_srcdir '/data/agg.csv'
+\set badfilename :abs_srcdir '/data/agg.bad'
+
 CREATE FOREIGN TABLE agg_text (
 	a	int2,
 	b	float4
 ) SERVER file_server
-OPTIONS (format 'text', filename '@abs_srcdir@/data/agg.data', delimiter '	', null '\N');
+OPTIONS (format 'text', filename :'filename', delimiter '	', null '\N');
 GRANT SELECT ON agg_text TO file_textarray_fdw_user;
 CREATE FOREIGN TABLE agg_text_array (
 	   t text[]	
 ) SERVER file_server
-OPTIONS (format 'text', filename '@abs_srcdir@/data/agg.data', delimiter '	', null '\N');
+OPTIONS (format 'text', filename :'filename', delimiter '	', null '\N');
 GRANT SELECT ON agg_text_array TO file_textarray_fdw_user;
 CREATE FOREIGN TABLE agg_csv (
 	a	int2,
 	b	float4
 ) SERVER file_server
-OPTIONS (format 'csv', filename '@abs_srcdir@/data/agg.csv', header 'true', delimiter ';', quote '@', escape '"', null '');
+OPTIONS (format 'csv', filename :'csvfilename', header 'true', delimiter ';', quote '@', escape '"', null '');
 CREATE FOREIGN TABLE agg_csv_array (
 	   t text[]
 ) SERVER file_server
-OPTIONS (format 'csv', filename '@abs_srcdir@/data/agg.csv', header 'true', delimiter ';', quote '@', escape '"', null '');
+OPTIONS (format 'csv', filename :'csvfilename', header 'true', delimiter ';', quote '@', escape '"', null '');
 CREATE FOREIGN TABLE agg_bad (
 	a	int2,
 	b	float4
 ) SERVER file_server
-OPTIONS (format 'csv', filename '@abs_srcdir@/data/agg.bad', header 'true', delimiter ';', quote '@', escape '"', null '');
+OPTIONS (format 'csv', filename :'badfilename', header 'true', delimiter ';', quote '@', escape '"', null '');
 CREATE FOREIGN TABLE agg_bad_array (
 	   t text[]
 ) SERVER file_server
-OPTIONS (format 'csv', filename '@abs_srcdir@/data/agg.bad', header 'true', delimiter ';', quote '@', escape '"', null '');
+OPTIONS (format 'csv', filename :'badfilename', header 'true', delimiter ';', quote '@', escape '"', null '');
+
 -- basic query tests
 SELECT * FROM agg_text WHERE b > 10.0 ORDER BY a;
-ERROR:  table for file_textarray_fdw foreign tables must have only one column
 SELECT * FROM agg_csv ORDER BY a;
-ERROR:  table for file_textarray_fdw foreign tables must have only one column
 SELECT * FROM agg_csv c JOIN agg_text t ON (t.a = c.a) ORDER BY c.a;
-ERROR:  table for file_textarray_fdw foreign tables must have only one column
-SELECT t[1]::int2 as a, t[2]::float4 as b FROM agg_text_array WHERE t[2]::float4 > 10.0 ORDER BY t[1]::int;
-  a  |   b    
------+--------
-  42 | 324.78
- 100 | 99.097
-(2 rows)
 
+SELECT t[1]::int2 as a, t[2]::float4 as b FROM agg_text_array WHERE t[2]::float4 > 10.0 ORDER BY t[1]::int;
 SELECT t[1]::int2 as a, t[2]::float4 as b FROM agg_csv ORDER BY a;
-ERROR:  column "t" does not exist
-LINE 1: SELECT t[1]::int2 as a, t[2]::float4 as b FROM agg_csv ORDER...
-               ^
+
 SELECT * 
 FROM (SELECT t[1]::int2 as a, t[2]::float4 as b FROM agg_csv_array) c 
  JOIN (SELECT t[1]::int2 as a, t[2]::float4 as b FROM agg_text_array) t 
     ON (t.a = c.a) 
 ORDER BY c.a;
-  a  |    b    |  a  |    b    
------+---------+-----+---------
-   0 | 0.09561 |   0 | 0.09561
-  42 |  324.78 |  42 |  324.78
- 100 |  99.097 | 100 |  99.097
-(3 rows)
 
 -- error context report tests
 SELECT * FROM agg_bad;               -- ERROR
-ERROR:  table for file_textarray_fdw foreign tables must have only one column
+
 SELECT * FROM agg_bad_array;               -- NOT AN ERROR in text_array!
-      t       
---------------
- {100,99.097}
- {0,aaa}
- {42,324.78}
-(3 rows)
 
 SELECT  t[1]::int2 as a, t[2]::float4 as b FROM agg_bad_array; -- ERROR
-ERROR:  invalid input syntax for type real: "aaa"
+
 -- misc query tests
 \t on
-EXPLAIN (VERBOSE, COSTS FALSE) SELECT * FROM agg_csv_array;
- Foreign Scan on public.agg_csv_array
-   Output: t
-   Foreign File: @abs_srcdir@/data/agg.csv
-
+select explain_filter('EXPLAIN (VERBOSE, COSTS FALSE) SELECT * FROM agg_csv_array');
 \t off
 PREPARE st(int) AS SELECT * FROM agg_csv_array WHERE t[1]::int = $1;
 EXECUTE st(100);
-      t       
---------------
- {100,99.097}
-(1 row)
-
 EXECUTE st(100);
-      t       
---------------
- {100,99.097}
-(1 row)
-
 DEALLOCATE st;
+
 -- tableoid
 SELECT tableoid::regclass, b FROM agg_csv_array;
-ERROR:  column "b" does not exist
-LINE 1: SELECT tableoid::regclass, b FROM agg_csv_array;
-                                   ^
+
 -- updates aren't supported
 INSERT INTO agg_csv_array VALUES(1,2.0);
-ERROR:  INSERT has more expressions than target columns
-LINE 1: INSERT INTO agg_csv_array VALUES(1,2.0);
-                                           ^
 UPDATE agg_csv_array SET a = 1;
-ERROR:  column "a" of relation "agg_csv_array" does not exist
-LINE 1: UPDATE agg_csv_array SET a = 1;
-                                 ^
 DELETE FROM agg_csv_array WHERE a = 100;
-ERROR:  column "a" does not exist
-LINE 1: DELETE FROM agg_csv_array WHERE a = 100;
-                                        ^
 -- but this should be ignored
 SELECT * FROM agg_csv_array FOR UPDATE;
-      t       
---------------
- {100,99.097}
- {0,0.09561}
- {42,324.78}
-(3 rows)
 
 -- privilege tests
 SET ROLE file_textarray_fdw_superuser;
 SELECT * FROM agg_text_array ORDER BY t[1]::int2;
-      t       
---------------
- {0,0.09561}
- {42,324.78}
- {56,7.8}
- {100,99.097}
-(4 rows)
-
 SET ROLE file_textarray_fdw_user;
 SELECT * FROM agg_text_array ORDER BY t[1]::int2;
-      t       
---------------
- {0,0.09561}
- {42,324.78}
- {56,7.8}
- {100,99.097}
-(4 rows)
-
 SET ROLE no_priv_user;
 SELECT * FROM agg_text_array ORDER BY t[1]::int2;   -- ERROR
-ERROR:  permission denied for foreign table agg_text_array
 SET ROLE file_textarray_fdw_user;
 \t on
-EXPLAIN (VERBOSE, COSTS FALSE) SELECT * FROM agg_text_array WHERE t[1]::int2 > 0;
- Foreign Scan on public.agg_text_array
-   Output: t
-   Filter: ((agg_text_array.t[1])::smallint > 0)
-   Foreign File: @abs_srcdir@/data/agg.data
-
+select explain_filter('EXPLAIN (VERBOSE, COSTS FALSE) SELECT * FROM agg_text_array WHERE t[1]::int2 > 0');
 \t off
+
 -- privilege tests for object
 SET ROLE file_textarray_fdw_superuser;
 ALTER FOREIGN TABLE agg_text_array OWNER TO file_textarray_fdw_user;
 ALTER FOREIGN TABLE agg_text_array OPTIONS (SET format 'text');
 SET ROLE file_textarray_fdw_user;
 ALTER FOREIGN TABLE agg_text_array OPTIONS (SET format 'text');
-ERROR:  only superuser can change options of a file_fdw foreign table
 SET ROLE file_textarray_fdw_superuser;
+
 -- cleanup
 RESET ROLE;
 DROP EXTENSION file_textarray_fdw CASCADE;
-NOTICE:  drop cascades to 10 other objects
-DETAIL:  drop cascades to server file_server
-drop cascades to user mapping for file_textarray_fdw_user on server file_server
-drop cascades to user mapping for file_textarray_fdw_superuser on server file_server
-drop cascades to user mapping for no_priv_user on server file_server
-drop cascades to foreign table agg_text
-drop cascades to foreign table agg_text_array
-drop cascades to foreign table agg_csv
-drop cascades to foreign table agg_csv_array
-drop cascades to foreign table agg_bad
-drop cascades to foreign table agg_bad_array
 DROP ROLE file_textarray_fdw_superuser, file_textarray_fdw_user, no_priv_user;

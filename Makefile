@@ -10,8 +10,6 @@ DATA_built = $(EXTENSION)--$(EXTVERSION).sql
 
 REGRESS = file_textarray_fdw
 
-EXTRA_CLEAN = sql/file_textarray_fdw.sql expected/file_textarray_fdw.out
-
 all: $(EXTENSION)--$(EXTVERSION).sql
 
 $(EXTENSION)--$(EXTVERSION).sql: $(EXTENSION).sql
