@@ -235,7 +235,7 @@ ALTER FOREIGN TABLE agg_text_array OWNER TO file_textarray_fdw_user;
 ALTER FOREIGN TABLE agg_text_array OPTIONS (SET format 'text');
 SET ROLE file_textarray_fdw_user;
 ALTER FOREIGN TABLE agg_text_array OPTIONS (SET format 'text');
-ERROR:  only superuser can change options of a file_fdw foreign table
+ERROR:  only superuser can change options of a file_textarray_fdw foreign table
 SET ROLE file_textarray_fdw_superuser;
 -- cleanup
 RESET ROLE;
