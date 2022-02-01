@@ -53,7 +53,7 @@ struct FileFdwOption
 };
 
 /*
- * Valid options for file_fdw.
+ * Valid options for file_textarray_fdw.
  * These options are based on the options for COPY FROM command.
  *
  * Note: If you are adding new option for user mapping, you need to modify
@@ -204,7 +204,7 @@ file_textarray_fdw_handler(PG_FUNCTION_ARGS)
 
 /*
  * Validate the generic options given to a FOREIGN DATA WRAPPER, SERVER,
- * USER MAPPING or FOREIGN TABLE that uses file_fdw.
+ * USER MAPPING or FOREIGN TABLE that uses file_textarray_fdw.
  *
  * Raise an ERROR if the option or its value is considered invalid.
  */
@@ -218,7 +218,7 @@ file_textarray_fdw_validator(PG_FUNCTION_ARGS)
 	ListCell   *cell;
 
 	/*
-	 * Only superusers are allowed to set options of a file_fdw foreign table.
+	 * Only superusers are allowed to set options of a file_textarray_fdw foreign table.
 	 * This is because we don't want non-superusers to be able to
 	 * control which file gets read or which program gets executed
 	 *
@@ -233,10 +233,10 @@ file_textarray_fdw_validator(PG_FUNCTION_ARGS)
 	if (catalog == ForeignTableRelationId && !superuser())
 		ereport(ERROR,
 				(errcode(ERRCODE_INSUFFICIENT_PRIVILEGE),
-				 errmsg("only superuser can change options of a file_fdw foreign table")));
+				 errmsg("only superuser can change options of a file_textarray_fdw foreign table")));
 
 	/*
-	 * Check that only options supported by file_fdw, and allowed for the
+	 * Check that only options supported by file_textarray_fdw, and allowed for the
 	 * current object type, are given.
 	 */
 	foreach(cell, options_list)
@@ -296,7 +296,7 @@ file_textarray_fdw_validator(PG_FUNCTION_ARGS)
 	if (catalog == ForeignTableRelationId && filename == NULL)
 		ereport(ERROR,
 				(errcode(ERRCODE_FDW_DYNAMIC_PARAMETER_VALUE_NEEDED),
-				 errmsg("either filename or program is required for file_fdw foreign tables")));
+				 errmsg("either filename or program is required for file_textarray_fdw foreign tables")));
 
 	PG_RETURN_VOID();
 }
@@ -319,7 +319,7 @@ is_valid_option(const char *option, Oid context)
 }
 
 /*
- * Fetch the options for a file_fdw foreign table.
+ * Fetch the options for a file_textarray_fdw foreign table.
  *
  * We have to separate out filename/program from the other options because
  * they must not appear in the options list passed to the core COPY code.
@@ -337,7 +337,7 @@ fileGetOptions(Oid foreigntableid,
 
 	/*
 	 * Extract options from FDW objects.  We ignore user mappings because
-	 * file_fdw doesn't have any options that can be specified there.
+	 * file_textarray_fdw doesn't have any options that can be specified there.
 	 *
 	 * (XXX Actually, given the current contents of valid_options[], there's
 	 * no point in examining anything except the foreign table's own options.
@@ -380,7 +380,7 @@ fileGetOptions(Oid foreigntableid,
 	if (*filename == NULL)
 		ereport(ERROR,
 				(errcode(ERRCODE_FDW_UNABLE_TO_CREATE_REPLY),
-				 errmsg("either filename or program is required for file_fdw foreign tables")));
+				 errmsg("either filename or program is required for file_textarray_fdw foreign tables")));
 	*other_options = options;
 }
 
@@ -917,7 +917,7 @@ file_acquire_sample_rows(Relation onerel, int elevel,
 	 * rows from the file with Copy routines.
 	 */
 	tupcontext = AllocSetContextCreate(CurrentMemoryContext,
-									   "file_fdw temporary context",
+									   "file_textarray_fdw temporary context",
 									   ALLOCSET_DEFAULT_MINSIZE,
 									   ALLOCSET_DEFAULT_INITSIZE,
 									   ALLOCSET_DEFAULT_MAXSIZE);
