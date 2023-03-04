@@ -7,12 +7,12 @@
 
 -- Clean up in case a prior regression run failed
 SET client_min_messages TO 'error';
-DROP ROLE IF EXISTS file_textarray_fdw_superuser, file_textarray_fdw_user, no_priv_user;
+DROP ROLE IF EXISTS regress_file_textarray_fdw_superuser, regress_file_textarray_fdw_user, regress_no_priv_user;
 RESET client_min_messages;
 
-CREATE ROLE file_textarray_fdw_superuser LOGIN SUPERUSER; -- is a superuser
-CREATE ROLE file_textarray_fdw_user LOGIN;                -- has priv and user mapping
-CREATE ROLE no_priv_user LOGIN;                 -- has priv but no user mapping
+CREATE ROLE regress_file_textarray_fdw_superuser LOGIN SUPERUSER; -- is a superuser
+CREATE ROLE regress_file_textarray_fdw_user LOGIN;                -- has priv and user mapping
+CREATE ROLE regress_no_priv_user LOGIN;                 -- has priv but no user mapping
 
 -- Install file_textarray_fdw
 CREATE EXTENSION file_textarray_fdw;
@@ -33,26 +33,26 @@ begin
 end;
 $$;
 
--- file_textarray_fdw_superuser owns fdw-related objects
-SET ROLE file_textarray_fdw_superuser;
+-- regress_file_textarray_fdw_superuser owns fdw-related objects
+SET ROLE regress_file_textarray_fdw_superuser;
 CREATE SERVER file_server FOREIGN DATA WRAPPER file_textarray_fdw;
 
 -- privilege tests
-SET ROLE file_textarray_fdw_user;
+SET ROLE regress_file_textarray_fdw_user;
 CREATE FOREIGN DATA WRAPPER file_textarray_fdw2 HANDLER file_textarray_fdw_handler VALIDATOR file_textarray_fdw_validator;   -- ERROR
 CREATE SERVER file_server2 FOREIGN DATA WRAPPER file_textarray_fdw;   -- ERROR
-CREATE USER MAPPING FOR file_textarray_fdw_user SERVER file_server;   -- ERROR
+CREATE USER MAPPING FOR regress_file_textarray_fdw_user SERVER file_server;   -- ERROR
 
-SET ROLE file_textarray_fdw_superuser;
-GRANT USAGE ON FOREIGN SERVER file_server TO file_textarray_fdw_user;
+SET ROLE regress_file_textarray_fdw_superuser;
+GRANT USAGE ON FOREIGN SERVER file_server TO regress_file_textarray_fdw_user;
 
-SET ROLE file_textarray_fdw_user;
-CREATE USER MAPPING FOR file_textarray_fdw_user SERVER file_server;
+SET ROLE regress_file_textarray_fdw_user;
+CREATE USER MAPPING FOR regress_file_textarray_fdw_user SERVER file_server;
 
 -- create user mappings and grant privilege to test users
-SET ROLE file_textarray_fdw_superuser;
-CREATE USER MAPPING FOR file_textarray_fdw_superuser SERVER file_server;
-CREATE USER MAPPING FOR no_priv_user SERVER file_server;
+SET ROLE regress_file_textarray_fdw_superuser;
+CREATE USER MAPPING FOR regress_file_textarray_fdw_superuser SERVER file_server;
+CREATE USER MAPPING FOR regress_no_priv_user SERVER file_server;
 
 -- validator tests
 CREATE FOREIGN TABLE tbl () SERVER file_server OPTIONS (format 'xml');  -- ERROR
@@ -87,12 +87,12 @@ CREATE FOREIGN TABLE agg_text (
 	b	float4
 ) SERVER file_server
 OPTIONS (format 'text', filename :'filename', delimiter '	', null '\N');
-GRANT SELECT ON agg_text TO file_textarray_fdw_user;
+GRANT SELECT ON agg_text TO regress_file_textarray_fdw_user;
 CREATE FOREIGN TABLE agg_text_array (
 	   t text[]	
 ) SERVER file_server
 OPTIONS (format 'text', filename :'filename', delimiter '	', null '\N');
-GRANT SELECT ON agg_text_array TO file_textarray_fdw_user;
+GRANT SELECT ON agg_text_array TO regress_file_textarray_fdw_user;
 CREATE FOREIGN TABLE agg_csv (
 	a	int2,
 	b	float4
@@ -153,26 +153,26 @@ DELETE FROM agg_csv_array WHERE a = 100;
 SELECT * FROM agg_csv_array FOR UPDATE;
 
 -- privilege tests
-SET ROLE file_textarray_fdw_superuser;
+SET ROLE regress_file_textarray_fdw_superuser;
 SELECT * FROM agg_text_array ORDER BY t[1]::int2;
-SET ROLE file_textarray_fdw_user;
+SET ROLE regress_file_textarray_fdw_user;
 SELECT * FROM agg_text_array ORDER BY t[1]::int2;
-SET ROLE no_priv_user;
+SET ROLE regress_no_priv_user;
 SELECT * FROM agg_text_array ORDER BY t[1]::int2;   -- ERROR
-SET ROLE file_textarray_fdw_user;
+SET ROLE regress_file_textarray_fdw_user;
 \t on
 select explain_filter('EXPLAIN (VERBOSE, COSTS FALSE) SELECT * FROM agg_text_array WHERE t[1]::int2 > 0');
 \t off
 
 -- privilege tests for object
-SET ROLE file_textarray_fdw_superuser;
-ALTER FOREIGN TABLE agg_text_array OWNER TO file_textarray_fdw_user;
+SET ROLE regress_file_textarray_fdw_superuser;
+ALTER FOREIGN TABLE agg_text_array OWNER TO regress_file_textarray_fdw_user;
 ALTER FOREIGN TABLE agg_text_array OPTIONS (SET format 'text');
-SET ROLE file_textarray_fdw_user;
+SET ROLE regress_file_textarray_fdw_user;
 ALTER FOREIGN TABLE agg_text_array OPTIONS (SET format 'text');
-SET ROLE file_textarray_fdw_superuser;
+SET ROLE regress_file_textarray_fdw_superuser;
 
 -- cleanup
 RESET ROLE;
 DROP EXTENSION file_textarray_fdw CASCADE;
-DROP ROLE file_textarray_fdw_superuser, file_textarray_fdw_user, no_priv_user;
+DROP ROLE regress_file_textarray_fdw_superuser, regress_file_textarray_fdw_user, regress_no_priv_user;
