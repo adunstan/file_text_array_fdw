@@ -438,6 +438,7 @@ fileGetForeignPaths(PlannerInfo *root,
 									 NIL,		/* no pathkeys */
 									 NULL,		/* no outer rel either */
                                      NULL,      /* no extra plan */
+									 NIL,       /* no fdw_restrictinfo list */
 									 NIL));		/* no fdw_private data */
 
 	/*
