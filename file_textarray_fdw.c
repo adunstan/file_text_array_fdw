@@ -1109,9 +1109,7 @@ makeTextArray(FileFdwExecutionState *fdw_private, TupleTableSlot *slot, char **r
 		else
 		{
 			nulls[fld] = false;
-			values[fld] = PointerGetDatum(
-				DirectFunctionCall1(textin, 
-									CStringGetDatum(string)));
+			values[fld] = DirectFunctionCall1(textin, CStringGetDatum(string));
 		}
 	}
 
