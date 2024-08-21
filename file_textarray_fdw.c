@@ -433,6 +433,7 @@ fileGetForeignPaths(PlannerInfo *root,
 			 create_foreignscan_path(root, baserel,
 									 NULL,		/* default pathtarget */
 									 baserel->rows,
+									 0,         /* no disabled nodes */
 									 startup_cost,
 									 total_cost,
 									 NIL,		/* no pathkeys */
