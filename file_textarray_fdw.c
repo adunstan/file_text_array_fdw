@@ -28,6 +28,7 @@
 #include "commands/copy.h"
 #include "commands/defrem.h"
 #include "commands/explain.h"
+#include "commands/explain_format.h"
 #include "commands/vacuum.h"
 #include "foreign/fdwapi.h"
 #include "foreign/foreign.h"
