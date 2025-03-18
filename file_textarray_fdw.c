@@ -30,6 +30,7 @@
 #include "commands/explain_format.h"
 #include "commands/explain_state.h"
 #include "commands/vacuum.h"
+#include "executor/executor.h"
 #include "foreign/fdwapi.h"
 #include "foreign/foreign.h"
 #include "miscadmin.h"
